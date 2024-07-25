@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.1",
-    "expo": "~51.0.8",
+    "expo": "~51.0.22",
     "expo-status-bar": "~1.12.1",
-    "expo-updates": "~0.25.14",
+    "expo-updates": "~0.25.21",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-native": "0.74.1",
+    "react-native": "0.74.3",
     "react-native-progress": "^5.0.1",
     "react-native-web": "~0.19.6",
     "react-native-webview": "13.8.6"
