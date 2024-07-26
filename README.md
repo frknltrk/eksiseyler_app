@@ -8,9 +8,16 @@ $ git clone ... cd && eksiseyler/
 $ mv .env.example .env
 ```
 
+## DEVELOPMENT
+
+## TROUBLESHOOTING
+
+- [Error: Runtime version policies are only supported in the managed workflow](https://github.com/expo/eas-cli/issues/1689)
+
 ## UPGRADE
 
 ```bash
-$ npx expo-doctor # optional
+$ npx expo-doctor
 $ npx expo install --check
+$ npm audit fix # optional
 ```
