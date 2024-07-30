@@ -6,6 +6,7 @@
 $ git clone ... cd && eksiseyler/
 # update the API URL inside .env.example
 $ mv .env.example .env
+$ npx expo start
 ```
 
 ## DEVELOPMENT
