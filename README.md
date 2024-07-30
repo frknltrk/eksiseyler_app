@@ -3,7 +3,7 @@
 ## BUILD
 
 ```bash
-$ git clone ... cd && eksiseyler/
+$ git clone ... cd && eksiseyler_app/
 # update the API URL inside .env.example
 $ mv .env.example .env
 $ npx expo start
