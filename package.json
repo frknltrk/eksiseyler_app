@@ -18,7 +18,8 @@
     "react-native": "0.74.3",
     "react-native-progress": "^5.0.1",
     "react-native-web": "~0.19.6",
-    "react-native-webview": "13.8.6"
+    "react-native-webview": "13.8.6",
+    "expo-system-ui": "~3.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
