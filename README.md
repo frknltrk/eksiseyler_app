@@ -22,3 +22,6 @@ $ npx expo-doctor
 $ npx expo install --check
 $ npm audit fix # optional
 ```
+## TO DO
+- [x] dark mode
+- [ ] share button
