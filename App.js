@@ -122,12 +122,8 @@ export default function App() {
         />
       )}
       <View style={[styles.buttonsContainer, colorScheme === 'dark' ? styles.darkMode : styles.lightMode]}>
-        <Pressable
-          style={styles.button}
-          onPress={handleSaveArticle}
-          onLongPress={handleOpenSavedArticles}
-        >
-          <Text style={styles.buttonText}>KAYDET</Text>
+        <Pressable style={styles.button} onPress={handleShareArticle}>
+          <Text style={styles.buttonText}>PAYLAŞ</Text>
         </Pressable>
         <Pressable style={styles.button} onPress={getRandomArticle} disabled={loading}>
           {loading ? (
@@ -136,8 +132,12 @@ export default function App() {
             <Text style={styles.buttonText}>RASTGELE</Text>
           )}
         </Pressable>
-        <Pressable style={styles.button} onPress={handleShareArticle}>
-          <Text style={styles.buttonText}>PAYLAŞ</Text>
+        <Pressable
+          style={styles.button}
+          onPress={handleSaveArticle}
+          onLongPress={handleOpenSavedArticles}
+        >
+          <Text style={styles.buttonText}>KAYDET</Text>
         </Pressable>
       </View>
     </SafeAreaView>
