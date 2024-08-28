@@ -24,6 +24,7 @@ $ npm audit fix # optional
 ```
 ## TO DO
 - [x] dark mode
-- [ ] share button
-- [ ] save the article (offline)
+- [x] share button
+- [x] save the article
+- [ ] offline read
 - [ ] navigate forth

@@ -1,20 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useColorScheme } from 'react-native';
-import { StyleSheet, SafeAreaView, BackHandler, Pressable, Text, ActivityIndicator, Platform } from 'react-native';
+import { useColorScheme, Platform, Share, Alert, FlatList, Modal, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, SafeAreaView, BackHandler, Pressable, Text, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
 
 export default function App() {
   const webViewRef = useRef(null);
   const HOME_URL = 'https://eksiseyler.com/';
-  const [articleUrl, setArticleUrl] = useState(HOME_URL);
+  const [currentUrl, setCurrentUrl] = useState(HOME_URL);
   const [canGoBack, setCanGoBack] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-
+  const [savedArticles, setSavedArticles] = useState([]);
+  const [savedModalVisible, setSavedModalVisible] = useState(false);
   const colorScheme = useColorScheme();
 
+  const handleSaveArticle = () => {
+    if (!savedArticles.includes(currentUrl)) {
+      setSavedArticles([...savedArticles, currentUrl]);
+      Alert.alert('Article Saved', 'The current article has been saved.');
+    } else {
+      Alert.alert('Duplicate Article', 'This article is already saved.');
+    }
+  };
+
+  const handleOpenSavedArticles = () => {
+    setSavedModalVisible(!savedModalVisible);
+  };
+
+  const handleShareArticle = async () => {
+    try {
+      await Share.share({
+        message: currentUrl,
+      });
+    } catch (error) {
+      console.error('Error sharing article:', error);
+    }
+  };
+
   const handleWebViewNavigationStateChange = (navState) => {
+    setCurrentUrl(navState.url);
     setCanGoBack(navState.canGoBack && navState.url !== HOME_URL);
   };
 
@@ -27,7 +52,6 @@ export default function App() {
     }
   }, [canGoBack]);
 
-  // Inject JavaScript to click the link for dark mode or light mode
   useEffect(() => {
     const switchTheme = () => {
       if (colorScheme === 'dark') {
@@ -60,13 +84,19 @@ export default function App() {
     try {
       const response = await fetch(process.env.EXPO_PUBLIC_API_URL);
       const data = await response.json();
-      setArticleUrl(data['article_url']);
+      setCurrentUrl(data['article_url']);
     } catch (error) {
       console.error('Error fetching random article:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const renderSavedArticle = ({ item }) => (
+    <TouchableOpacity onPress={() => setCurrentUrl(item)}>
+      <Text style={styles.savedArticle}>{item}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,18 +108,38 @@ export default function App() {
       />
       <WebView
         ref={webViewRef}
-        source={{ uri: articleUrl }}
+        source={{ uri: currentUrl }}
         style={styles.webview}
         onNavigationStateChange={handleWebViewNavigationStateChange}
         onLoadProgress={({ nativeEvent }) => setLoadingProgress(nativeEvent.progress)}
       />
-      <Pressable style={styles.button} onPress={getRandomArticle} disabled={loading}>
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>RASTGELE</Text>
-        )}
-      </Pressable>
+      {savedModalVisible && (
+        <FlatList
+          data={savedArticles}
+          renderItem={renderSavedArticle}
+          keyExtractor={(item, index) => index.toString()}
+          style={styles.savedList}
+        />
+      )}
+      <View style={styles.buttonsContainer}>
+        <Pressable
+          style={styles.button}
+          onPress={handleSaveArticle}
+          onLongPress={handleOpenSavedArticles}
+        >
+          <Text style={styles.buttonText}>KAYDET</Text>
+        </Pressable>
+        <Pressable style={styles.button} onPress={getRandomArticle} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>RASTGELE</Text>
+          )}
+        </Pressable>
+        <Pressable style={styles.button} onPress={handleShareArticle}>
+          <Text style={styles.buttonText}>PAYLAŞ</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -99,12 +149,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 50,
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
   button: {
     backgroundColor: '#007AFF',
     padding: 10,
-    margin: 10,
     borderRadius: 5,
     alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 5,
   },
   buttonText: {
     color: '#fff',
@@ -112,5 +168,13 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+  },
+  savedList: {
+    flex: 1,
+  },
+  savedArticle: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
