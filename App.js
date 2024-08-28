@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useColorScheme, Platform, Share, Alert, FlatList, Modal, TouchableOpacity, View } from 'react-native';
+import { useColorScheme, Platform, Share, Alert, FlatList, TouchableOpacity, View } from 'react-native';
 import { StyleSheet, SafeAreaView, BackHandler, Pressable, Text, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
@@ -94,7 +94,7 @@ export default function App() {
 
   const renderSavedArticle = ({ item }) => (
     <TouchableOpacity onPress={() => setCurrentUrl(item)}>
-      <Text style={styles.savedArticle}>{item}</Text>
+      <Text style={[styles.savedArticle, colorScheme === 'dark' ? styles.savedArticleDark : styles.savedArticleLight]}>{item}</Text>
     </TouchableOpacity>
   );
 
@@ -118,10 +118,10 @@ export default function App() {
           data={savedArticles}
           renderItem={renderSavedArticle}
           keyExtractor={(item, index) => index.toString()}
-          style={styles.savedList}
+          style={[styles.savedList, colorScheme === 'dark' ? styles.darkMode : styles.lightMode]}
         />
       )}
-      <View style={styles.buttonsContainer}>
+      <View style={[styles.buttonsContainer, colorScheme === 'dark' ? styles.darkMode : styles.lightMode]}>
         <Pressable
           style={styles.button}
           onPress={handleSaveArticle}
@@ -154,6 +154,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     padding: 10,
   },
+  darkMode: {
+    backgroundColor: '#2d2d2d',
+  },
+  lightMode: {
+    backgroundColor: '#ffffff',
+  },
   button: {
     backgroundColor: '#007AFF',
     padding: 10,
@@ -175,6 +181,11 @@ const styles = StyleSheet.create({
   savedArticle: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  },
+  savedArticleLight: {
+    color: '#2d2d2d',
+  },
+  savedArticleDark: {
+    color: '#ffffff',
   },
 });
