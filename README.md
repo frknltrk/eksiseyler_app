@@ -28,3 +28,4 @@ $ npm audit fix # optional
 - [x] save the article
 - [ ] offline read
 - [ ] navigate forth
+- [ ] search bar
