@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useColorScheme, Platform, Share, Alert, FlatList, TouchableOpacity, View } from 'react-native';
+import { useColorScheme, Platform, Share, Alert, FlatList, TouchableOpacity, View, StatusBar } from 'react-native';
 import { StyleSheet, SafeAreaView, BackHandler, Pressable, Text, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
@@ -43,33 +43,21 @@ export default function App() {
     setCanGoBack(navState.canGoBack && navState.url !== HOME_URL);
   };
 
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
-      return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
-      };
-    }
-  }, [canGoBack]);
-
-  useEffect(() => {
-    const switchTheme = () => {
-      if (colorScheme === 'dark') {
-        webViewRef.current.injectJavaScript(`
-          const darkModeLink = document.querySelector("a[href='/ayarlar/gece-gorus-modu']");
-          if (darkModeLink) darkModeLink.click();
-        `);
-      } else {
-        webViewRef.current.injectJavaScript(`
-          const lightModeLink = document.querySelector("a[href='/ayarlar/her-zamanki-gorunum']");
-          if (lightModeLink) lightModeLink.click();
-        `);
-      }
-    };
+  const switchWebViewTheme = (webViewRef, colorScheme) => {
     if (webViewRef.current) {
-      switchTheme();
+      const darkModeScript = `
+        const darkModeLink = document.querySelector("a[href='/ayarlar/gece-gorus-modu']");
+        if (darkModeLink) darkModeLink.click();
+      `;
+      const lightModeScript = `
+        const lightModeLink = document.querySelector("a[href='/ayarlar/her-zamanki-gorunum']");
+        if (lightModeLink) lightModeLink.click();
+      `;
+
+      const scriptToInject = colorScheme === 'dark' ? darkModeScript : lightModeScript;
+      webViewRef.current.injectJavaScript(scriptToInject);
     }
-  }, [colorScheme]);
+  };
 
   const onAndroidBackPress = () => {
     if (webViewRef.current && canGoBack) {
@@ -98,8 +86,27 @@ export default function App() {
     </TouchableOpacity>
   );
 
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+      };
+    }
+  }, [canGoBack]);
+
+  useEffect(() => {
+    // Switch WebView theme
+    switchWebViewTheme(webViewRef, colorScheme);
+
+    // Update status bar style
+    const statusBarStyle = colorScheme === 'dark' ? 'light-content' : 'dark-content';
+    StatusBar.setBarStyle(statusBarStyle, true);
+  }, [colorScheme]);
+
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
       <Progress.Bar
         progress={loadingProgress}
         width={null}
@@ -112,6 +119,7 @@ export default function App() {
         style={styles.webview}
         onNavigationStateChange={handleWebViewNavigationStateChange}
         onLoadProgress={({ nativeEvent }) => setLoadingProgress(nativeEvent.progress)}
+        onLoadEnd={() => switchWebViewTheme(webViewRef, colorScheme)}
       />
       {savedModalVisible && (
         <FlatList
@@ -147,7 +155,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 50,
+    marginTop: 0,
   },
   buttonsContainer: {
     flexDirection: 'row',
