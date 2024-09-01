@@ -102,11 +102,12 @@ export default function App() {
     // Update status bar style
     const statusBarStyle = colorScheme === 'dark' ? 'light-content' : 'dark-content';
     StatusBar.setBarStyle(statusBarStyle, true);
+    StatusBar.setBackgroundColor(colorScheme === 'dark' ? '#2d2d2d' : '#ffffff');
   }, [colorScheme]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, colorScheme === 'dark' ? styles.darkMode : styles.lightMode]}>
+      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colorScheme === 'dark' ? '#2d2d2d' : '#ffffff'} />
       <Progress.Bar
         progress={loadingProgress}
         width={null}
