@@ -4,12 +4,11 @@
 
 ```bash
 $ git clone ... cd && eksiseyler_app/
-# update the API URL inside .env.example
-$ mv .env.example .env
+$ cp .env.example .env 
+# update the API URL inside .env
+$ npm install
 $ npx expo start
 ```
-
-## DEVELOPMENT
 
 ## TROUBLESHOOTING
 
