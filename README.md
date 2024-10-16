@@ -3,9 +3,9 @@
 ## BUILD
 
 ```bash
-$ git clone ... cd && eksiseyler_app/
+$ git clone https://github.com/frknltrk/eksiseyler_app cd && eksiseyler_app
 $ cp .env.example .env 
-# update the API URL inside .env
+# update the value inside .env
 $ npm install
 $ npx expo start
 ```
