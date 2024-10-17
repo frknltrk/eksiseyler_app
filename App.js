@@ -1,74 +1,69 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useColorScheme, Platform, Share, Alert, FlatList, TouchableOpacity, View, StatusBar } from 'react-native';
-import { StyleSheet, SafeAreaView, BackHandler, Pressable, Text, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useColorScheme, Platform, Share, Alert, FlatList, TouchableOpacity, View, StatusBar, BackHandler, Pressable, Text, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
 
+const HOME_URL = 'https://eksiseyler.com/';
+
 export default function App() {
   const webViewRef = useRef(null);
-  const HOME_URL = 'https://eksiseyler.com/';
   const [currentUrl, setCurrentUrl] = useState(HOME_URL);
   const [canGoBack, setCanGoBack] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [savedArticles, setSavedArticles] = useState([]);
-  const [savedModalVisible, setSavedModalVisible] = useState(false);
+  const [isSavedModalVisible, setIsSavedModalVisible] = useState(false);
   const colorScheme = useColorScheme();
 
-  const handleSaveArticle = () => {
-    if (!savedArticles.includes(currentUrl)) {
+  const handleSaveArticle = useCallback(() => {
+    if (savedArticles.includes(currentUrl)) {
+      Alert.alert('Duplicate Article', 'This article is already saved.');
+    } else {
       setSavedArticles([...savedArticles, currentUrl]);
       Alert.alert('Article Saved', 'The current article has been saved.');
-    } else {
-      Alert.alert('Duplicate Article', 'This article is already saved.');
     }
-  };
+  }, [currentUrl, savedArticles]);
 
-  const handleOpenSavedArticles = () => {
-    setSavedModalVisible(!savedModalVisible);
-  };
+  const toggleSavedModal = useCallback(() => {
+    setIsSavedModalVisible(!isSavedModalVisible);
+  }, [isSavedModalVisible]);
 
-  const handleShareArticle = async () => {
+  const handleShareArticle = useCallback(async () => {
     try {
-      await Share.share({
-        message: currentUrl,
-      });
+      await Share.share({ message: currentUrl });
     } catch (error) {
       console.error('Error sharing article:', error);
     }
-  };
+  }, [currentUrl]);
 
-  const handleWebViewNavigationStateChange = (navState) => {
+  const handleWebViewNavigationStateChange = useCallback((navState) => {
     setCurrentUrl(navState.url);
     setCanGoBack(navState.canGoBack && navState.url !== HOME_URL);
-  };
+  }, []);
 
-  const switchWebViewTheme = (webViewRef, colorScheme) => {
+  const switchWebViewTheme = useCallback(() => {
     if (webViewRef.current) {
-      const darkModeScript = `
+      const scriptToInject = colorScheme === 'dark' ? `
         const darkModeLink = document.querySelector("a[href='/ayarlar/gece-gorus-modu']");
         if (darkModeLink) darkModeLink.click();
-      `;
-      const lightModeScript = `
+      ` : `
         const lightModeLink = document.querySelector("a[href='/ayarlar/her-zamanki-gorunum']");
         if (lightModeLink) lightModeLink.click();
       `;
-
-      const scriptToInject = colorScheme === 'dark' ? darkModeScript : lightModeScript;
       webViewRef.current.injectJavaScript(scriptToInject);
     }
-  };
+  }, [colorScheme]);
 
-  const onAndroidBackPress = () => {
+  const onAndroidBackPress = useCallback(() => {
     if (webViewRef.current && canGoBack) {
       webViewRef.current.goBack();
       return true;
     }
     return false;
-  };
+  }, [canGoBack]);
 
-  const getRandomArticle = async () => {
-    setLoading(true);
+  const fetchRandomArticle = useCallback(async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(process.env.EXPO_PUBLIC_API_URL);
       const data = await response.json();
@@ -76,15 +71,15 @@ export default function App() {
     } catch (error) {
       console.error('Error fetching random article:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const renderSavedArticle = ({ item }) => (
+  const renderSavedArticle = useCallback(({ item }) => (
     <TouchableOpacity onPress={() => setCurrentUrl(item)}>
       <Text style={[styles.savedArticle, colorScheme === 'dark' ? styles.savedArticleDark : styles.savedArticleLight]}>{item}</Text>
     </TouchableOpacity>
-  );
+  ), [colorScheme]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -93,11 +88,11 @@ export default function App() {
         BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
       };
     }
-  }, [canGoBack]);
+  }, [onAndroidBackPress]);
 
   useEffect(() => {
-    // Switch WebView theme
-    switchWebViewTheme(webViewRef, colorScheme);
+    // Ensure the WebView theme switches on colorScheme change (i.e., real-time)
+    switchWebViewTheme();
 
     // Update status bar style
     const statusBarStyle = colorScheme === 'dark' ? 'light-content' : 'dark-content';
@@ -122,7 +117,7 @@ export default function App() {
         onLoadProgress={({ nativeEvent }) => setLoadingProgress(nativeEvent.progress)}
         onLoadEnd={() => switchWebViewTheme(webViewRef, colorScheme)}
       />
-      {savedModalVisible && (
+      {isSavedModalVisible && (
         <FlatList
           data={savedArticles}
           renderItem={renderSavedArticle}
@@ -134,8 +129,8 @@ export default function App() {
         <Pressable style={styles.button} onPress={handleShareArticle}>
           <Text style={styles.buttonText}>PAYLAŞ</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={getRandomArticle} disabled={loading}>
-          {loading ? (
+        <Pressable style={styles.button} onPress={fetchRandomArticle} disabled={isLoading}>
+          {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>RASTGELE</Text>
@@ -144,7 +139,7 @@ export default function App() {
         <Pressable
           style={styles.button}
           onPress={handleSaveArticle}
-          onLongPress={handleOpenSavedArticles}
+          onLongPress={toggleSavedModal}
         >
           <Text style={styles.buttonText}>KAYDET</Text>
         </Pressable>
