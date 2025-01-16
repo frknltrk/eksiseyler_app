@@ -66,14 +66,29 @@ export default function App() {
     setIsLoading(true);
     try {
       const response = await fetch(process.env.EXPO_PUBLIC_API_URL);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid content type. Expected JSON.");
+      }
+  
       const data = await response.json();
-      setCurrentUrl(data['article_url']);
+      if (!data.article_url) {
+        throw new Error("Invalid response format. Missing 'article_url'.");
+      }
+  
+      setCurrentUrl(data.article_url);
     } catch (error) {
-      console.error('Error fetching random article:', error);
+      console.error("Error fetching random article:", error);
+      Alert.alert("Error", "Could not fetch a random article. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []);  
 
   const renderSavedArticle = useCallback(({ item }) => (
     <TouchableOpacity onPress={() => setCurrentUrl(item)}>
