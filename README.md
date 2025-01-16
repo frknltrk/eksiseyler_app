@@ -23,12 +23,13 @@ $ npx expo start
 ### UPGRADE
 
 ```bash
-$ npx expo-doctor
-$ npx expo install --check
-$ npm audit fix # optional
+$ #https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/
+$ npx expo install expo@latest
+$ npx expo install --fix
 ```
 
 ### TO DO
+
 - [x] dark mode
 - [x] share button
 - [x] save the article
